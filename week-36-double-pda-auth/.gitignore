@@ -1,0 +1,24 @@
+# Rust
+target/
+Cargo.lock
+
+# If you're building WASM or web clients
+dist/
+pkg/
+node_modules/
+
+# Solana keypairs
+*.json
+*.key
+*.pub
+
+# Logs & dumps
+*.log
+*.out
+dump.rdb
+
+# Mac system files
+.DS_Store
+
+# VSCode
+.vscode/
