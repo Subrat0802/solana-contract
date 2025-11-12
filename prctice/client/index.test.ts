@@ -14,15 +14,17 @@ test("init account", async () => {
     
     const lamports = await connection.getMinimumBalanceForRentExemption(GREETING_SIZE);
 
-    const ix = SystemProgram.createAccount({
+    const tx = new Transaction();
+    tx.add(new TransactionInstruction(
+        SystemProgram.createAccount({
         fromPubkey: userAccount.publicKey,
         lamports:lamports,
         newAccountPubkey: dataAccount.publicKey,
         space: GREETING_SIZE,
         programId: program_id
     })
-
-    const tx = new Transaction().add(ix);
+    ))
+    
     const txhash = await connection.sendTransaction(tx, [userAccount, dataAccount]);
     await connection.confirmTransaction(txhash);
 
