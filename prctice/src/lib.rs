@@ -43,25 +43,39 @@ pub fn process_instructions(
                 data_acc_data.count += amount;
             }   
             Instructions::Sub(amount) => {
-                if data_acc_data.count < amount {
-                    msg!("count is less then 2, first increase")
-                }
-                else{
-                    data_acc_data.count -= amount;
-                }
-            }   
+            // Prevent underflow
+            if data_acc_data.count < amount {
+                msg!("Cannot subtract more than current count");
+                return Err(ProgramError::InvalidArgument);
+            }
+
+            // Prevent result < 2
+            if data_acc_data.count - amount < 2 {
+                msg!("count cannot go below 2");
+                return Err(ProgramError::InvalidArgument);
+            }
+
+            data_acc_data.count -= amount;
+        }  
             Instructions::Mul(amount) => {
                 data_acc_data.count *= amount;
             }   
             Instructions::Div(amount) => {
-                if amount == 0 {
-                    msg!("Cannot divide by zero");
-                } else if data_acc_data.count < 2 {
-                    msg!("count is less than 2, first increase");
-                } else {
-                    data_acc_data.count /= amount;
-                }
-            }      
+            if amount == 0 {
+                msg!("Cannot divide by zero");
+                return Err(ProgramError::InvalidArgument);
+            }
+
+            let result = data_acc_data.count / amount;
+
+            if result < 2 {
+                msg!("Result cannot go below 2");
+                return Err(ProgramError::InvalidArgument);
+            }
+
+            data_acc_data.count = result;
+        }
+     
         }
     }
 

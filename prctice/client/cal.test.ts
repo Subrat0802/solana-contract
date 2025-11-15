@@ -5,7 +5,7 @@ import * as borsh from "borsh";
 
 const userAccount = new Keypair();
 const dataAccount = new Keypair();
-const programId = new PublicKey("EhjQA9kFheGU7qz5jd57RRXTwGgAHE6oKhLeDGmqhkkr");
+const programId = new PublicKey("2QPnF5g2oKipdepChejFntbGXspJyoJ4S77AKXvLj87L");
 const connection = new Connection("http://localhost:8899", "confirmed");
 
 test("init counter account", async () => {
@@ -77,23 +77,30 @@ test("do calculation", async () => {
 
 
 test("sub", async () => {
-    const tx = new Transaction();
-    tx.add(new TransactionInstruction({
-        keys:[{
-            pubkey: dataAccount.publicKey,
-            isSigner:false,
-            isWritable:true
-        }],
-        programId: programId,
-        data: Buffer.from(new Uint8Array([1,1,0,0,0]))
-    }))
+    async function subCount(){
+        const tx = new Transaction();
+        tx.add(new TransactionInstruction({
+            keys:[{
+                pubkey: dataAccount.publicKey,
+                isSigner:false,
+                isWritable:true
+            }],
+            programId: programId,
+            data: Buffer.from(new Uint8Array([1,1,0,0,0]))
+        }))
 
-    const {blockhash, lastValidBlockHeight} = await connection.getLatestBlockhash();
-    tx.recentBlockhash = blockhash;
-    tx.feePayer = userAccount.publicKey;
-    const txhash = await connection.sendTransaction(tx, [userAccount]);
-    const res = await connection.confirmTransaction({signature:txhash, blockhash, lastValidBlockHeight});
+        const {blockhash, lastValidBlockHeight} = await connection.getLatestBlockhash();
+        tx.recentBlockhash = blockhash;
+        tx.feePayer = userAccount.publicKey;
+        const txhash = await connection.sendTransaction(tx, [userAccount]);
+        const res = await connection.confirmTransaction({signature:txhash, blockhash, lastValidBlockHeight});
 
+    }
+
+    await subCount();
+    await subCount();
+    
+    
     const dataAccountInfo = await connection.getAccountInfo(dataAccount.publicKey);
     if(!dataAccountInfo){
         throw new Error("Data account not found");
@@ -141,7 +148,7 @@ test("div", async () => {
             isWritable:true
         }],
         programId: programId,
-        data: Buffer.from(new Uint8Array([3,3,0,0,0]))
+        data: Buffer.from(new Uint8Array([3,10,0,0,0]))
     }))
 
     const {blockhash, lastValidBlockHeight} = await connection.getLatestBlockhash();
