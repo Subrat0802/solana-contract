@@ -1,49 +1,135 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use solana_program::{account_info::{AccountInfo, next_account_info}, entrypoint::ProgramResult, entrypoint, pubkey::Pubkey};
+use solana_program::{account_info::{AccountInfo, next_account_info}, entrypoint::ProgramResult, entrypoint, msg, program_error::ProgramError, pubkey::Pubkey};
 
 
-entrypoint!(process_instruction);
+entrypoint!(process_instructions);
 
 #[derive(BorshDeserialize, BorshSerialize)]
-struct Favourite {
-    name: String,
-    color: String,
-    number: u32
+struct Counter {
+    count: u32
 }
 
-pub fn process_instruction(
+#[derive(BorshDeserialize, BorshSerialize)]
+enum Instructions {
+    Add(u32),
+    Sub(u32),
+    Mul(u32),
+    Div(u32),
+} 
+
+pub fn process_instructions(
     program_id: &Pubkey,
     accounts: &[AccountInfo],
     instructions: &[u8]
 ) -> ProgramResult {
-    let accs = &mut accounts.iter();
-    let data_acc = next_account_info(accs)?;
+    let mut accs = accounts.iter();
+    let data_acc = next_account_info(&mut accs)?;
 
-    let mut data = data_acc.data.borrow_mut();
+    // SAFETY CHECK — important!
+    if data_acc.owner != program_id {
+        msg!("Account not owned by the program");
+        return Err(ProgramError::IncorrectProgramId);
+    }
 
-    // Initialize on first write (account full of zeros)
-    let mut favourites = if data.iter().all(|&b| b == 0) {
-        Favourite {
-            name: "".to_string(),
-            color: "".to_string(),
-            number: 0,
+
+    let mut data_acc_data = Counter::try_from_slice(&data_acc.data.borrow())?;
+
+    if data_acc_data.count == 0 {
+        data_acc_data.count = 1;
+    }
+    else {
+        match Instructions::try_from_slice(instructions)? {
+            Instructions::Add(amount) => {
+                data_acc_data.count += amount;
+            }   
+            Instructions::Sub(amount) => {
+                if data_acc_data.count < amount {
+                    msg!("count is less then 2, first increase")
+                }
+                else{
+                    data_acc_data.count -= amount;
+                }
+            }   
+            Instructions::Mul(amount) => {
+                data_acc_data.count *= amount;
+            }   
+            Instructions::Div(amount) => {
+                if amount == 0 {
+                    msg!("Cannot divide by zero");
+                } else if data_acc_data.count < 2 {
+                    msg!("count is less than 2, first increase");
+                } else {
+                    data_acc_data.count /= amount;
+                }
+            }      
         }
-    } else {
-        Favourite::try_from_slice(&data)?
-    };
+    }
 
-    // Deserialize incoming favourite update
-    let new_fav = Favourite::try_from_slice(instructions)?;
-
-    favourites.name = new_fav.name;
-    favourites.color = new_fav.color;
-    favourites.number = new_fav.number;
-
-    // Serialize back
-    favourites.serialize(&mut &mut data[..])?;
-
+    data_acc_data.serialize(&mut *data_acc.data.borrow_mut())?;
     Ok(())
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// // favourite contract
+// use borsh::{BorshDeserialize, BorshSerialize};
+// use solana_program::{account_info::{AccountInfo, next_account_info}, entrypoint::ProgramResult, entrypoint, pubkey::Pubkey};
+
+
+// entrypoint!(process_instruction);
+
+// #[derive(BorshDeserialize, BorshSerialize)]
+// struct Favourite {
+//     name: String,
+//     color: String,
+//     number: u32
+// }
+
+// pub fn process_instruction(
+//     program_id: &Pubkey,
+//     accounts: &[AccountInfo],
+//     instructions: &[u8]
+// ) -> ProgramResult {
+//     let accs = &mut accounts.iter();
+//     let data_acc = next_account_info(accs)?;
+
+//     let mut data = data_acc.data.borrow_mut();
+
+//     // Initialize on first write (account full of zeros)
+//     let mut favourites = if data.iter().all(|&b| b == 0) {
+//         Favourite {
+//             name: "".to_string(),
+//             color: "".to_string(),
+//             number: 0,
+//         }
+//     } else {
+//         Favourite::try_from_slice(&data)?
+//     };
+
+//     // Deserialize incoming favourite update
+//     let new_fav = Favourite::try_from_slice(instructions)?;
+
+//     favourites.name = new_fav.name;
+//     favourites.color = new_fav.color;
+//     favourites.number = new_fav.number;
+
+//     // Serialize back
+//     favourites.serialize(&mut &mut data[..])?;
+
+//     Ok(())
+// }
 
 
 
