@@ -1,28 +1,35 @@
-use solana_program::{account_info::{AccountInfo, next_account_info}, entrypoint::ProgramResult, instruction::{AccountMeta, Instruction}, program::invoke, pubkey::Pubkey};
+use solana_program::{account_info::{AccountInfo, next_account_info}, 
+    entrypoint::ProgramResult, 
+    entrypoint, 
+    instruction::{AccountMeta, Instruction}, 
+    program::invoke, 
+    pubkey::Pubkey
+};
 
+entrypoint!(process_instructions);
 
-
-pub fn process_instruction(
-    program_id: Pubkey,
+// cpi double contract
+pub fn process_instructions(
+    _program_id: &Pubkey,
     accounts: &[AccountInfo],
-    instruction: &[u8]
+    instructions: &[u8]
 ) -> ProgramResult {
-    let iter_acc = &mut accounts.iter();
 
-    let data_acc = next_account_info(iter_acc)?;
-    let program_acc = next_account_info(iter_acc)?;
+    let mut accs = accounts.iter();
+    let data_accs = next_account_info(&mut accs)?;
+    let double_cont = next_account_info(&mut accs)?;
 
-    let ix = Instruction{
-        program_id: *program_acc.key,
+    let instruction = Instruction{
+        program_id:*double_cont.key,
         accounts: vec![AccountMeta{
             is_signer: true,
             is_writable: true,
-            pubkey: *data_acc.key
+            pubkey: *data_accs.key
         }],
         data: vec![]
     };
 
-    invoke(&ix, &[data_acc.clone(), program_acc.clone()])?;
+    invoke(&instruction, &[data_accs.clone(), double_cont.clone()])?;
     Ok(())
 }
 
