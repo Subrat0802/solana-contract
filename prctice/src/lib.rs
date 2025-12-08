@@ -1,87 +1,140 @@
 use borsh::{BorshDeserialize, BorshSerialize};
-use solana_program::{account_info::{AccountInfo, next_account_info}, entrypoint::ProgramResult, entrypoint, msg, program_error::ProgramError, pubkey::Pubkey};
+use solana_program::{account_info::{AccountInfo, next_account_info}, entrypoint::ProgramResult, entrypoint, pubkey::Pubkey};
 
-
-entrypoint!(process_instructions);
-
-#[derive(BorshDeserialize, BorshSerialize)]
+#[derive(BorshSerialize, BorshDeserialize)]
 struct Counter {
     count: u32
 }
 
 #[derive(BorshDeserialize, BorshSerialize)]
 enum Instructions {
-    Add(u32),
-    Sub(u32),
-    Mul(u32),
-    Div(u32),
-} 
+    Incre(u32),
+    Decre(u32)
+}
 
-pub fn process_instructions(
-    program_id: &Pubkey,
+entrypoint!(program_instruction);
+
+fn program_instruction(
+    programid: &Pubkey,
     accounts: &[AccountInfo],
-    instructions: &[u8]
-) -> ProgramResult {
-    let mut accs = accounts.iter();
-    let data_acc = next_account_info(&mut accs)?;
+    instruction: &[u8]
+) -> ProgramResult{
 
-    // SAFETY CHECK — important!
-    if data_acc.owner != program_id {
-        msg!("Account not owned by the program");
-        return Err(ProgramError::IncorrectProgramId);
-    }
+    let iter = &mut accounts.iter();
+    let data_account = next_account_info(iter)?;
 
+    let mut  counter = Counter::try_from_slice(&mut data_account.data.borrow_mut())?;
 
-    let mut data_acc_data = Counter::try_from_slice(&data_acc.data.borrow())?;
-
-    if data_acc_data.count == 0 {
-        data_acc_data.count = 1;
-    }
-    else {
-        match Instructions::try_from_slice(instructions)? {
-            Instructions::Add(amount) => {
-                data_acc_data.count += amount;
-            }   
-            Instructions::Sub(amount) => {
-            // Prevent underflow
-            if data_acc_data.count < amount {
-                msg!("Cannot subtract more than current count");
-                return Err(ProgramError::InvalidArgument);
-            }
-
-            // Prevent result < 2
-            if data_acc_data.count - amount < 2 {
-                msg!("count cannot go below 2");
-                return Err(ProgramError::InvalidArgument);
-            }
-
-            data_acc_data.count -= amount;
-        }  
-            Instructions::Mul(amount) => {
-                data_acc_data.count *= amount;
-            }   
-            Instructions::Div(amount) => {
-            if amount == 0 {
-                msg!("Cannot divide by zero");
-                return Err(ProgramError::InvalidArgument);
-            }
-
-            let result = data_acc_data.count / amount;
-
-            if result < 2 {
-                msg!("Result cannot go below 2");
-                return Err(ProgramError::InvalidArgument);
-            }
-
-            data_acc_data.count = result;
+    match Instructions::try_from_slice(instruction)? {
+        Instructions::Incre(amount) => {
+            counter.count += amount;
         }
-     
+        Instructions::Decre(amount) => {
+            counter.count -= amount;
         }
     }
-
-    data_acc_data.serialize(&mut *data_acc.data.borrow_mut())?;
+    counter.serialize(&mut *data_account.data.borrow_mut())?;
     Ok(())
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+//cal+++++++++++++++++++++++++++++++++++++++++
+
+// use borsh::{BorshDeserialize, BorshSerialize};
+// use solana_program::{account_info::{AccountInfo, next_account_info}, entrypoint::ProgramResult, entrypoint, msg, program_error::ProgramError, pubkey::Pubkey};
+
+
+// entrypoint!(process_instructions);
+
+// #[derive(BorshDeserialize, BorshSerialize)]
+// struct Counter {
+//     count: u32
+// }
+
+// #[derive(BorshDeserialize, BorshSerialize)]
+// enum Instructions {
+//     Add(u32),
+//     Sub(u32),
+//     Mul(u32),
+//     Div(u32),
+// } 
+
+// pub fn process_instructions(
+//     program_id: &Pubkey,
+//     accounts: &[AccountInfo],
+//     instructions: &[u8]
+// ) -> ProgramResult {
+//     let mut accs = accounts.iter();
+//     let data_acc = next_account_info(&mut accs)?;
+
+//     // SAFETY CHECK — important!
+//     if data_acc.owner != program_id {
+//         msg!("Account not owned by the program");
+//         return Err(ProgramError::IncorrectProgramId);
+//     }
+
+
+//     let mut data_acc_data = Counter::try_from_slice(&data_acc.data.borrow())?;
+
+//     if data_acc_data.count == 0 {
+//         data_acc_data.count = 1;
+//     }
+//     else {
+//         match Instructions::try_from_slice(instructions)? {
+//             Instructions::Add(amount) => {
+//                 data_acc_data.count += amount;
+//             }   
+//             Instructions::Sub(amount) => {
+//             // Prevent underflow
+//             if data_acc_data.count < amount {
+//                 msg!("Cannot subtract more than current count");
+//                 return Err(ProgramError::InvalidArgument);
+//             }
+
+//             // Prevent result < 2
+//             if data_acc_data.count - amount < 2 {
+//                 msg!("count cannot go below 2");
+//                 return Err(ProgramError::InvalidArgument);
+//             }
+
+//             data_acc_data.count -= amount;
+//         }  
+//             Instructions::Mul(amount) => {
+//                 data_acc_data.count *= amount;
+//             }   
+//             Instructions::Div(amount) => {
+//             if amount == 0 {
+//                 msg!("Cannot divide by zero");
+//                 return Err(ProgramError::InvalidArgument);
+//             }
+
+//             let result = data_acc_data.count / amount;
+
+//             if result < 2 {
+//                 msg!("Result cannot go below 2");
+//                 return Err(ProgramError::InvalidArgument);
+//             }
+
+//             data_acc_data.count = result;
+//         }
+     
+//         }
+//     }
+
+//     data_acc_data.serialize(&mut *data_acc.data.borrow_mut())?;
+//     Ok(())
+// }
 
 
 
