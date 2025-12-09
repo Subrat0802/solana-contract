@@ -1,93 +1,93 @@
-import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction, TransactionInstruction } from "@solana/web3.js";
-import {test, expect} from "bun:test";
-import { CounterAccount, GREETING_SIZE, schema } from "./instructions";
-import * as borsh from "borsh";
+// import { Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction, TransactionInstruction } from "@solana/web3.js";
+// import {test, expect} from "bun:test";
+// import { CounterAccount, GREETING_SIZE, schema } from "./instructions";
+// import * as borsh from "borsh";
 
-const dataAccount = new Keypair();
-const userAccount = new Keypair();
-const connection = new Connection("http://127.0.0.1:8899");
-const prgoramId = new PublicKey("36RnNGa2oAvPcBqVKReKxGnkN3im4wQRU7ip6h3Q9KFT");
+// const dataAccount = new Keypair();
+// const userAccount = new Keypair();
+// const connection = new Connection("http://127.0.0.1:8899");
+// const prgoramId = new PublicKey("36RnNGa2oAvPcBqVKReKxGnkN3im4wQRU7ip6h3Q9KFT");
 
-test("init account", async () => {
-    const response = await connection.requestAirdrop(userAccount.publicKey, 1 * LAMPORTS_PER_SOL);
-    await connection.confirmTransaction(response);
+// test("init account", async () => {
+//     const response = await connection.requestAirdrop(userAccount.publicKey, 1 * LAMPORTS_PER_SOL);
+//     await connection.confirmTransaction(response);
     
-    const lamports = await connection.getMinimumBalanceForRentExemption(GREETING_SIZE);
+//     const lamports = await connection.getMinimumBalanceForRentExemption(GREETING_SIZE);
 
-    const tx = new Transaction();
-    tx.add(new TransactionInstruction(
-        SystemProgram.createAccount({
-            fromPubkey: userAccount.publicKey,
-            lamports: lamports,
-            newAccountPubkey: dataAccount.publicKey,
-            space: GREETING_SIZE,
-            programId: prgoramId
-        })
-    ))
+//     const tx = new Transaction();
+//     tx.add(new TransactionInstruction(
+//         SystemProgram.createAccount({
+//             fromPubkey: userAccount.publicKey,
+//             lamports: lamports,
+//             newAccountPubkey: dataAccount.publicKey,
+//             space: GREETING_SIZE,
+//             programId: prgoramId
+//         })
+//     ))
 
-    const txhash = await connection.sendTransaction(tx, [userAccount, dataAccount]);
-    await connection.confirmTransaction(txhash);
+//     const txhash = await connection.sendTransaction(tx, [userAccount, dataAccount]);
+//     await connection.confirmTransaction(txhash);
 
-    const dataAccountInfo = await connection.getAccountInfo(dataAccount.publicKey);
-    if (!dataAccountInfo){
-        throw new Error("Data Account not valid");
-    }
-    const counter = borsh.deserialize(schema, dataAccountInfo?.data) as CounterAccount;
-    console.log(counter.count);
-    expect(counter.count).toBe(0);
-})
+//     const dataAccountInfo = await connection.getAccountInfo(dataAccount.publicKey);
+//     if (!dataAccountInfo){
+//         throw new Error("Data Account not valid");
+//     }
+//     const counter = borsh.deserialize(schema, dataAccountInfo?.data) as CounterAccount;
+//     console.log(counter.count);
+//     expect(counter.count).toBe(0);
+// })
 
-test("inc count", async () => {
-    const tx = new Transaction();
-    tx.add(new TransactionInstruction({
-        keys: [{
-            pubkey: dataAccount.publicKey,
-            isWritable: true,
-            isSigner: false
-        }],
-        programId: prgoramId,
-        data: Buffer.from(new Uint8Array([0,1,0,0,0]))
-    }))
+// test("inc count", async () => {
+//     const tx = new Transaction();
+//     tx.add(new TransactionInstruction({
+//         keys: [{
+//             pubkey: dataAccount.publicKey,
+//             isWritable: true,
+//             isSigner: false
+//         }],
+//         programId: prgoramId,
+//         data: Buffer.from(new Uint8Array([0,1,0,0,0]))
+//     }))
 
-    const txhash = await connection.sendTransaction(tx, [userAccount]);
-    await connection.confirmTransaction(txhash);
+//     const txhash = await connection.sendTransaction(tx, [userAccount]);
+//     await connection.confirmTransaction(txhash);
 
-    const dataAccountInfo = await connection.getAccountInfo(dataAccount.publicKey);
-    if(!dataAccountInfo){
-        throw new Error("data account not found")
-    }
+//     const dataAccountInfo = await connection.getAccountInfo(dataAccount.publicKey);
+//     if(!dataAccountInfo){
+//         throw new Error("data account not found")
+//     }
 
-    const counter = borsh.deserialize(schema, dataAccountInfo.data) as CounterAccount;
-    console.log(counter.count);
-    expect(counter.count).toBe(1);
+//     const counter = borsh.deserialize(schema, dataAccountInfo.data) as CounterAccount;
+//     console.log(counter.count);
+//     expect(counter.count).toBe(1);
 
-})
+// })
 
 
-test("dec count", async () => {
-    const tx = new Transaction();
-    tx.add(new TransactionInstruction({
-        keys:[{
-            pubkey: dataAccount.publicKey,
-            isWritable: true,
-            isSigner: false
-        }],
-        programId: prgoramId,
-        data: Buffer.from(new Uint8Array([1,1,0,0,0]))
-    }))
+// test("dec count", async () => {
+//     const tx = new Transaction();
+//     tx.add(new TransactionInstruction({
+//         keys:[{
+//             pubkey: dataAccount.publicKey,
+//             isWritable: true,
+//             isSigner: false
+//         }],
+//         programId: prgoramId,
+//         data: Buffer.from(new Uint8Array([1,1,0,0,0]))
+//     }))
 
-    const txhash = await connection.sendTransaction(tx, [userAccount]);
-    await connection.confirmTransaction(txhash);
+//     const txhash = await connection.sendTransaction(tx, [userAccount]);
+//     await connection.confirmTransaction(txhash);
 
-    const dataAccountInfo = await connection.getAccountInfo(dataAccount.publicKey);
-    if (!dataAccountInfo){
-        throw new Error("data account not found");
-    }
+//     const dataAccountInfo = await connection.getAccountInfo(dataAccount.publicKey);
+//     if (!dataAccountInfo){
+//         throw new Error("data account not found");
+//     }
 
-    const counter = borsh.deserialize(schema, dataAccountInfo?.data) as CounterAccount;
-    console.log(counter.count);
-    expect(counter.count).toBe(0);
-})
+//     const counter = borsh.deserialize(schema, dataAccountInfo?.data) as CounterAccount;
+//     console.log(counter.count);
+//     expect(counter.count).toBe(0);
+// })
 
 
 

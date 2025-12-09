@@ -1,41 +1,119 @@
-use borsh::{BorshDeserialize, BorshSerialize};
-use solana_program::{account_info::{AccountInfo, next_account_info}, entrypoint::ProgramResult, entrypoint, pubkey::Pubkey};
+use solana_program::{account_info::{AccountInfo, next_account_info}, entrypoint::ProgramResult, entrypoint, instruction::{AccountMeta, Instruction}, program::invoke, pubkey::Pubkey};
 
-#[derive(BorshSerialize, BorshDeserialize)]
-struct Counter {
-    count: u32
-}
+entrypoint!(process_instruction);
 
-#[derive(BorshDeserialize, BorshSerialize)]
-enum Instructions {
-    Incre(u32),
-    Decre(u32)
-}
 
-entrypoint!(program_instruction);
-
-fn program_instruction(
-    programid: &Pubkey,
+fn process_instruction(
+    _program_id: &Pubkey,
     accounts: &[AccountInfo],
-    instruction: &[u8]
-) -> ProgramResult{
+    _instructions: &[u8]
+) -> ProgramResult {
+    let accounts = &mut accounts.iter();
+    let data_account = next_account_info(accounts)?;
+    let program_account = next_account_info(accounts)?;
 
-    let iter = &mut accounts.iter();
-    let data_account = next_account_info(iter)?;
+    let instruction = Instruction{
+        program_id: *program_account.key,
+        accounts: vec![AccountMeta{
+            is_signer: false,
+            is_writable: true,
+            pubkey: *data_account.key
+        }],
+        data: vec![]
+    };
 
-    let mut  counter = Counter::try_from_slice(&mut data_account.data.borrow_mut())?;
+    invoke(&instruction, &[data_account.clone()])?;
 
-    match Instructions::try_from_slice(instruction)? {
-        Instructions::Incre(amount) => {
-            counter.count += amount;
-        }
-        Instructions::Decre(amount) => {
-            counter.count -= amount;
-        }
-    }
-    counter.serialize(&mut *data_account.data.borrow_mut())?;
     Ok(())
 }
+
+
+
+
+
+
+
+
+//+++++++++++++++++++++++++++++++++
+// use borsh::{BorshDeserialize, BorshSerialize};
+// use solana_program::{account_info::{AccountInfo, next_account_info}, entrypoint::ProgramResult, entrypoint, pubkey::Pubkey};
+
+// entrypoint!(processs_instructions);
+// #[derive(BorshDeserialize, BorshSerialize)]
+// struct Counter {
+//     count: u32
+// }
+
+// fn processs_instructions(
+//     programid: &Pubkey,
+//     accounts: &[AccountInfo],
+//     instructions: &[u8]
+// ) -> ProgramResult {
+//     let accounts = &mut accounts.iter();
+//     let data_account = next_account_info(accounts)?;
+
+//     let mut counter = Counter::try_from_slice(&mut data_account.data.borrow_mut())?;
+
+//     if counter.count == 0 {
+//         counter.count = 1
+//     }else{
+//         counter.count *= 2
+//     }
+
+//     counter.serialize(&mut *data_account.data.borrow_mut())?;
+
+//     Ok(())
+// }
+
+
+
+
+
+
+
+
+
+
+
+// double +++++++++++++++++++++++++++++++++++++++++++++++++++
+// use borsh::{BorshDeserialize, BorshSerialize};
+// use solana_program::{account_info::{AccountInfo, next_account_info}, entrypoint::ProgramResult, entrypoint, pubkey::Pubkey};
+
+// #[derive(BorshSerialize, BorshDeserialize)]
+// struct Counter {
+//     count: u32
+// }
+
+// #[derive(BorshDeserialize, BorshSerialize)]
+// enum Instructions {
+//     Incre(u32),
+//     Decre(u32)
+// }
+
+// entrypoint!(program_instruction);
+
+// fn program_instruction(
+//     programid: &Pubkey,
+//     accounts: &[AccountInfo],
+//     instruction: &[u8]
+// ) -> ProgramResult{
+
+//     let iter = &mut accounts.iter();
+//     let data_account = next_account_info(iter)?;
+
+//     let mut  counter = Counter::try_from_slice(&mut data_account.data.borrow_mut())?;
+
+//     match Instructions::try_from_slice(instruction)? {
+//         Instructions::Incre(amount) => {
+//             counter.count += amount;
+//         }
+//         Instructions::Decre(amount) => {
+//             counter.count -= amount;
+//         }
+//     }
+//     counter.serialize(&mut *data_account.data.borrow_mut())?;
+//     Ok(())
+// }
 
 
 
