@@ -1,18 +1,39 @@
 import * as borsh from "borsh";
 
-
 export class CounterAccount {
     count = 0;
-
     constructor({count}: {count: number}){
-        this.count = count;
+        this.count = count
     }
 }
 
-
-export const schema = {struct: {count: 'u32'}};
+export const schema = {
+    struct: {
+        count: 'u32'
+    }
+}
 
 export const GREETING_SIZE = borsh.serialize(
     schema,
     new CounterAccount({count: 0})
 ).length
+
+
+// import * as borsh from "borsh";
+
+
+// export class CounterAccount {
+//     count = 0;
+
+//     constructor({count}: {count: number}){
+//         this.count = count;
+//     }
+// }
+
+
+// export const schema = {struct: {count: 'u32'}};
+
+// export const GREETING_SIZE = borsh.serialize(
+//     schema,
+//     new CounterAccount({count: 0})
+// ).length
