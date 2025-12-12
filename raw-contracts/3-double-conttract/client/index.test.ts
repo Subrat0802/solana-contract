@@ -22,7 +22,6 @@ test("init", async () => {
         })
     );
 
-
     tx.recentBlockhash = svm.latestBlockhash();
     tx.sign(userAccount, dataAccount);
     const txhash = svm.sendTransaction(tx);
