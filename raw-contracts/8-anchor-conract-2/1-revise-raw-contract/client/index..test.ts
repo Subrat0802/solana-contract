@@ -72,8 +72,8 @@ test("init account", async () => {
 });
 
 test("double", async () => {
-    const tx = new Transaction();
-    tx.add(
+  const tx = new Transaction();
+  tx.add(
     new TransactionInstruction({
       keys: [
         { pubkey: dataAcc.publicKey, isWritable: true, isSigner: false },
@@ -94,13 +94,11 @@ test("double", async () => {
 
   const data = borsh.deserialize(schema, dataAccInfo.data) as CounterProgram;
   console.log(data.count);
-
-})
-
+});
 
 test("double", async () => {
-    const tx = new Transaction();
-    tx.add(
+  const tx = new Transaction();
+  tx.add(
     new TransactionInstruction({
       keys: [
         { pubkey: dataAcc.publicKey, isWritable: true, isSigner: false },
@@ -121,12 +119,11 @@ test("double", async () => {
 
   const data = borsh.deserialize(schema, dataAccInfo.data) as CounterProgram;
   console.log(data.count);
-
-})
+});
 
 test("double", async () => {
-    const tx = new Transaction();
-    tx.add(
+  const tx = new Transaction();
+  tx.add(
     new TransactionInstruction({
       keys: [
         { pubkey: dataAcc.publicKey, isWritable: true, isSigner: false },
@@ -147,13 +144,11 @@ test("double", async () => {
 
   const data = borsh.deserialize(schema, dataAccInfo.data) as CounterProgram;
   console.log(data.count);
+});
 
-})
-
-
-test("double", async () => {
-    const tx = new Transaction();
-    tx.add(
+test("half", async () => {
+  const tx = new Transaction();
+  tx.add(
     new TransactionInstruction({
       keys: [
         { pubkey: dataAcc.publicKey, isWritable: true, isSigner: false },
@@ -174,5 +169,4 @@ test("double", async () => {
 
   const data = borsh.deserialize(schema, dataAccInfo.data) as CounterProgram;
   console.log(data.count);
-
-})
+});
