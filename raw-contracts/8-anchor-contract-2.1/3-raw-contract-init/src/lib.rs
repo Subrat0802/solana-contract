@@ -32,7 +32,7 @@ fn process_instruction(
             let data_account = next_account_info(iter)?;
             let system = next_account_info(iter)?;
 
-            if user_account.is_signer {
+            if !user_account.is_signer {
                 return Err(ProgramError::MissingRequiredSignature);
             }
 
@@ -70,7 +70,7 @@ fn process_instruction(
                 return Err(ProgramError::IncorrectProgramId);
             }
 
-            if user_account.is_signer {
+            if !user_account.is_signer {
                 return Err(ProgramError::MissingRequiredSignature);
             }
 
@@ -91,7 +91,7 @@ fn process_instruction(
                 return Err(ProgramError::IncorrectProgramId);
             }
 
-            if user_account.is_signer {
+            if !user_account.is_signer {
                 return Err(ProgramError::MissingRequiredSignature);
             }
 
